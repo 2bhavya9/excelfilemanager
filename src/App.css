@@ -1,0 +1,39 @@
+/* shared button styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.btn-primary {
+  background: #0ea5e9;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #0284c7;
+}
+
+.btn-logout {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1.5px solid #e2e8f0;
+}
+
+.btn-logout:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
+.btn-full {
+  width: 100%;
+  margin-top: 0.5rem;
+}
