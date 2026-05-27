@@ -1,94 +1,128 @@
-/**
- * FileCard.jsx
- * Displays a single staged or uploaded Excel file with metadata and actions.
- *
- * Props:
- *  file        – { name, size, status, progress, uploadedAt?, sheetNames? }
- *  onRemove    – () => void
- *  uploading   – bool  (disables remove while in-flight)
- */
 import { formatSize } from '../../utils/fileUtils';
 
-/** Maps status → Tailwind classes for the status badge */
-const STATUS_STYLES = {
-  staged:    'bg-blue-50 text-blue-600 border border-blue-200',
-  uploading: 'bg-yellow-50 text-yellow-600 border border-yellow-200',
-  done:      'bg-green-50 text-green-600 border border-green-200',
-  error:     'bg-red-50 text-red-600 border border-red-200',
-};
-
-const STATUS_LABELS = {
-  staged:    'Ready',
-  uploading: 'Uploading…',
-  done:      'Uploaded',
-  error:     'Failed',
+const STATUS_CONFIG = {
+  staged:    { label:'Ready',      dot:'#f59e0b', bg:'#fffbeb', text:'#b45309', border:'#fde68a' },
+  uploading: { label:'Uploading…', dot:'#3b82f6', bg:'#eff6ff', text:'#1d4ed8', border:'#bfdbfe' },
+  done:      { label:'Uploaded',   dot:'#22c55e', bg:'#f0fdf4', text:'#15803d', border:'#bbf7d0' },
+  error:     { label:'Failed',     dot:'#ef4444', bg:'#fff1f2', text:'#dc2626', border:'#fecaca' },
 };
 
 export default function FileCard({ file, onRemove, uploading }) {
-  const { name, size, status = 'staged', progress = 0, sheetNames } = file;
+  const { name, size, status = 'staged', progress = 0, sheetNames, uploadedAt } = file;
   const isUploading = status === 'uploading';
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.staged;
 
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 transition-shadow hover:shadow-sm">
+    <div style={{
+      display:'flex', alignItems:'center', gap:'14px',
+      background:'#fff', border:'1px solid #f1f5f9',
+      borderRadius:'12px', padding:'14px 16px',
+      transition:'all 0.15s ease',
+      boxShadow:'0 1px 2px rgba(0,0,0,0.04)',
+      position:'relative', overflow:'hidden',
+    }}
+    onMouseEnter={e => { e.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)'; e.currentTarget.style.borderColor='#e2e8f0'; }}
+    onMouseLeave={e => { e.currentTarget.style.boxShadow='0 1px 2px rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor='#f1f5f9'; }}
+    >
 
-      {/* Excel icon */}
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-xl">
+      {/* Progress stripe at bottom */}
+      {isUploading && (
+        <div style={{
+          position:'absolute', bottom:0, left:0, right:0, height:'3px',
+          background:'#e0e7ff',
+        }}>
+          <div style={{
+            height:'100%', width:`${progress}%`,
+            background:'linear-gradient(90deg,#2563eb,#0ea5e9)',
+            transition:'width 0.3s ease', borderRadius:'2px',
+          }}/>
+        </div>
+      )}
+
+      {/* File icon */}
+      <div style={{
+        width:'42px', height:'42px', borderRadius:'12px', flexShrink:0,
+        background:'linear-gradient(135deg,#d1fae5,#a7f3d0)',
+        display:'flex', alignItems:'center', justifyContent:'center',
+        fontSize:'20px', boxShadow:'0 2px 6px rgba(5,150,105,0.15)',
+      }}>
         📊
       </div>
 
       {/* File info */}
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-gray-800" title={name}>
+      <div style={{ flex:1, minWidth:0 }}>
+        <p style={{
+          color:'#0f172a', fontSize:'14px', fontWeight:600,
+          whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis',
+          marginBottom:'3px',
+        }} title={name}>
           {name}
         </p>
-
-        <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-gray-400">
-          <span>{formatSize(size)}</span>
-
-          {/* Sheet names preview (populated after xlsx parsing) */}
+        <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', gap:'8px' }}>
+          <span style={{
+            color:'#94a3b8', fontSize:'12px',
+            background:'#f8fafc', border:'1px solid #f1f5f9',
+            borderRadius:'6px', padding:'1px 7px', fontWeight:500,
+          }}>
+            {formatSize(size)}
+          </span>
           {sheetNames?.length > 0 && (
-            <span className="truncate max-w-[200px]" title={sheetNames.join(', ')}>
-              Sheets: {sheetNames.join(', ')}
+            <span style={{
+              color:'#7c3aed', fontSize:'11px', fontWeight:500,
+              background:'#f5f3ff', border:'1px solid #ede9fe',
+              borderRadius:'6px', padding:'1px 7px',
+              maxWidth:'180px', whiteSpace:'nowrap',
+              overflow:'hidden', textOverflow:'ellipsis',
+            }} title={sheetNames.join(', ')}>
+              {sheetNames.length} sheet{sheetNames.length !== 1 ? 's' : ''}
             </span>
           )}
-
-          {file.uploadedAt && (
-            <span>Uploaded {new Date(file.uploadedAt).toLocaleString()}</span>
+          {uploadedAt && (
+            <span style={{ color:'#cbd5e1', fontSize:'11px' }}>
+              {new Date(uploadedAt).toLocaleString()}
+            </span>
           )}
         </div>
-
-        {/* Progress bar — shown while uploading */}
-        {isUploading && (
-          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
-            <div
-              className="h-full rounded-full bg-blue-500 transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        )}
       </div>
 
       {/* Status badge */}
-      <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLES[status]}`}>
-        {STATUS_LABELS[status]}
-      </span>
+      <div style={{
+        display:'flex', alignItems:'center', gap:'5px', flexShrink:0,
+        background:cfg.bg, border:`1px solid ${cfg.border}`,
+        borderRadius:'20px', padding:'4px 10px',
+      }}>
+        <span style={{
+          width:'6px', height:'6px', borderRadius:'50%',
+          background:cfg.dot, flexShrink:0,
+          boxShadow: isUploading ? `0 0 0 3px ${cfg.border}` : 'none',
+          animation: isUploading ? 'pulse-ring 1.4s ease-in-out infinite' : 'none',
+        }}/>
+        <span style={{ color:cfg.text, fontSize:'11px', fontWeight:700 }}>{cfg.label}</span>
+      </div>
 
-      {/* Remove button — hidden while this card is uploading */}
+      {/* Action buttons */}
       {!isUploading && (
-        <button
-          onClick={onRemove}
-          disabled={uploading}
-          title="Remove"
-          className={[
-            'shrink-0 flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-sm font-bold transition-colors',
-            uploading
-              ? 'cursor-not-allowed bg-gray-100 text-gray-300'
-              : 'bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600',
-          ].join(' ')}
-        >
-          ✕
-        </button>
+        <div style={{ display:'flex', alignItems:'center', gap:'6px', flexShrink:0 }}>
+          {/* Delete */}
+          <button
+            onClick={onRemove}
+            disabled={uploading}
+            title="Delete file"
+            style={{
+              width:'32px', height:'32px', borderRadius:'8px',
+              border:'1.5px solid #fecaca', background:'#fff1f2',
+              color:'#dc2626', fontSize:'14px', fontWeight:700,
+              cursor: uploading ? 'not-allowed' : 'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              transition:'all 0.15s ease', flexShrink:0,
+              opacity: uploading ? 0.5 : 1,
+            }}
+            onMouseEnter={e => { if (!uploading) { e.currentTarget.style.background='#fee2e2'; e.currentTarget.style.borderColor='#fca5a5'; }}}
+            onMouseLeave={e => { e.currentTarget.style.background='#fff1f2'; e.currentTarget.style.borderColor='#fecaca'; }}
+          >
+            ✕
+          </button>
+        </div>
       )}
     </div>
   );

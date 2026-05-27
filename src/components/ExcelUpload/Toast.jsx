@@ -43,30 +43,61 @@ export function useToasts() {
 
 /* ── Styles per type ─────────────────────────────────────────────────────── */
 const TOAST_STYLES = {
-  success: { bar: 'bg-green-500',  icon: '✓', wrapper: 'border-green-200 bg-green-50 text-green-800' },
-  error:   { bar: 'bg-red-500',    icon: '✕', wrapper: 'border-red-200 bg-red-50 text-red-800' },
-  warning: { bar: 'bg-yellow-400', icon: '⚠', wrapper: 'border-yellow-200 bg-yellow-50 text-yellow-800' },
-  info:    { bar: 'bg-blue-500',   icon: 'ℹ', wrapper: 'border-blue-200 bg-blue-50 text-blue-800' },
+  success: { accent:'#22c55e',  icon:'✓', bg:'rgba(240,253,244,0.95)',  border:'#bbf7d0', text:'#15803d' },
+  error:   { accent:'#ef4444',  icon:'✕', bg:'rgba(255,241,242,0.95)',  border:'#fecaca', text:'#dc2626' },
+  warning: { accent:'#f59e0b',  icon:'⚠', bg:'rgba(255,251,235,0.95)',  border:'#fde68a', text:'#b45309' },
+  info:    { accent:'#3b82f6',  icon:'ℹ', bg:'rgba(239,246,255,0.95)',  border:'#bfdbfe', text:'#1d4ed8' },
 };
 
 /* ── Individual Toast ────────────────────────────────────────────────────── */
 function Toast({ toast, onDismiss }) {
   const s = TOAST_STYLES[toast.type] ?? TOAST_STYLES.info;
   return (
-    <div className={`relative flex items-start gap-3 overflow-hidden rounded-xl border px-4 py-3 shadow-md ${s.wrapper}`}>
-      {/* Coloured left bar */}
-      <div className={`absolute left-0 top-0 h-full w-1 ${s.bar}`} />
+    <div style={{
+      display:'flex', alignItems:'flex-start', gap:'10px',
+      background:s.bg, border:`1px solid ${s.border}`,
+      borderRadius:'14px', padding:'12px 14px',
+      boxShadow:'0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06)',
+      backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)',
+      position:'relative', overflow:'hidden',
+      animation:'slideToast 0.3s cubic-bezier(0.4,0,0.2,1) both',
+    }}>
+      {/* Accent bar */}
+      <div style={{
+        position:'absolute', left:0, top:0, bottom:0, width:'4px',
+        background:s.accent, borderRadius:'14px 0 0 14px',
+      }}/>
 
       {/* Icon */}
-      <span className="mt-0.5 shrink-0 font-bold">{s.icon}</span>
+      <span style={{
+        width:'24px', height:'24px', borderRadius:'8px', flexShrink:0,
+        background:s.accent, color:'#fff',
+        display:'flex', alignItems:'center', justifyContent:'center',
+        fontSize:'12px', fontWeight:800, marginLeft:'6px',
+      }}>
+        {s.icon}
+      </span>
 
       {/* Message */}
-      <p className="flex-1 text-sm font-medium leading-snug">{toast.message}</p>
+      <p style={{
+        flex:1, color:s.text, fontSize:'13px', fontWeight:600,
+        lineHeight:1.5, paddingTop:'1px',
+      }}>
+        {toast.message}
+      </p>
 
       {/* Dismiss */}
       <button
         onClick={() => onDismiss(toast.id)}
-        className="shrink-0 rounded p-0.5 opacity-50 hover:opacity-100 transition-opacity"
+        style={{
+          flexShrink:0, width:'20px', height:'20px', borderRadius:'6px',
+          border:'none', background:'transparent', cursor:'pointer',
+          color:s.text, opacity:0.5, fontSize:'13px', fontWeight:700,
+          display:'flex', alignItems:'center', justifyContent:'center',
+          transition:'opacity 0.15s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.opacity='1'; }}
+        onMouseLeave={e => { e.currentTarget.style.opacity='0.5'; }}
       >
         ✕
       </button>
@@ -78,10 +109,22 @@ function Toast({ toast, onDismiss }) {
 export function ToastContainer({ toasts, onDismiss }) {
   if (!toasts.length) return null;
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2 w-80">
-      {toasts.map(t => (
-        <Toast key={t.id} toast={t} onDismiss={onDismiss} />
-      ))}
-    </div>
+    <>
+      <style>{`
+        @keyframes slideToast {
+          from { opacity:0; transform:translateX(20px) scale(0.96); }
+          to   { opacity:1; transform:translateX(0)    scale(1);    }
+        }
+      `}</style>
+      <div style={{
+        position:'fixed', bottom:'24px', right:'24px',
+        zIndex:9999, display:'flex', flexDirection:'column', gap:'8px',
+        width:'320px',
+      }}>
+        {toasts.map(t => (
+          <Toast key={t.id} toast={t} onDismiss={onDismiss} />
+        ))}
+      </div>
+    </>
   );
 }

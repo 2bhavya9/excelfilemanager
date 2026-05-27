@@ -248,7 +248,7 @@ export default function ExcelUpload() {
   ═══════════════════════════════════════════════════════════════════════ */
   return (
     <>
-      <div className="flex flex-col gap-6">
+      <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
 
         {/* ── Drop zone ── */}
         <DropZone
@@ -259,29 +259,39 @@ export default function ExcelUpload() {
 
         {/* ── Action bar ── */}
         {files.length > 0 && (
-          <div className="flex flex-wrap items-center gap-3">
+          <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', gap:'10px' }}>
 
             {/* Upload button */}
             {stagedCount > 0 && (
               <button
                 onClick={handleUpload}
                 disabled={uploading}
-                className={[
-                  'flex items-center gap-2 rounded-xl px-5 py-2.5',
-                  'text-sm font-bold text-white shadow-sm transition-all',
-                  uploading
-                    ? 'cursor-not-allowed bg-blue-300'
-                    : 'bg-blue-600 hover:bg-blue-700 active:scale-95',
-                ].join(' ')}
+                style={{
+                  display:'flex', alignItems:'center', gap:'8px',
+                  height:'40px', padding:'0 20px', borderRadius:'10px',
+                  border:'none', cursor: uploading ? 'not-allowed' : 'pointer',
+                  background: uploading
+                    ? '#93c5fd'
+                    : 'linear-gradient(135deg,#2563eb,#1d4ed8)',
+                  color:'#fff', fontWeight:700, fontSize:'14px',
+                  boxShadow: uploading ? 'none' : '0 2px 10px rgba(37,99,235,0.4)',
+                  transition:'all 0.18s ease',
+                }}
+                onMouseEnter={e => { if (!uploading) e.currentTarget.style.transform='translateY(-1px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform='none'; }}
               >
                 {uploading ? (
                   <>
-                    {/* Simple CSS spinner */}
-                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <span style={{
+                      display:'inline-block', width:'16px', height:'16px',
+                      border:'2.5px solid rgba(255,255,255,0.4)',
+                      borderTopColor:'#fff', borderRadius:'50%',
+                      animation:'spin 0.7s linear infinite', flexShrink:0,
+                    }}/>
                     Uploading…
                   </>
                 ) : (
-                  <>⬆️ Upload {stagedCount} file{stagedCount !== 1 ? 's' : ''}</>
+                  <>⬆ Upload {stagedCount} file{stagedCount !== 1 ? 's' : ''}</>
                 )}
               </button>
             )}
@@ -290,7 +300,14 @@ export default function ExcelUpload() {
             {stagedCount > 0 && !uploading && (
               <button
                 onClick={() => setFiles(prev => prev.filter(f => f.status !== 'staged'))}
-                className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                style={{
+                  height:'40px', padding:'0 16px', borderRadius:'10px',
+                  border:'1.5px solid #e2e8f0', background:'#fff',
+                  color:'#64748b', fontWeight:600, fontSize:'13px',
+                  cursor:'pointer', transition:'all 0.15s ease',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background='#f8fafc'; }}
+                onMouseLeave={e => { e.currentTarget.style.background='#fff'; }}
               >
                 Discard Selection
               </button>
@@ -300,46 +317,104 @@ export default function ExcelUpload() {
             {uploadedCount > 0 && !uploading && stagedCount === 0 && (
               <button
                 onClick={handleClearAll}
-                className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors"
+                style={{
+                  height:'40px', padding:'0 16px', borderRadius:'10px',
+                  border:'1.5px solid #fecaca', background:'#fff1f2',
+                  color:'#dc2626', fontWeight:600, fontSize:'13px',
+                  cursor:'pointer', transition:'all 0.15s ease',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background='#fee2e2'; }}
+                onMouseLeave={e => { e.currentTarget.style.background='#fff1f2'; }}
               >
                 🗑 Clear All
               </button>
             )}
 
             {/* Count summary */}
-            <span className="ml-auto text-sm text-gray-400">
-              {uploadedCount > 0 && `${uploadedCount} uploaded`}
-              {uploadedCount > 0 && stagedCount > 0 && ' · '}
-              {stagedCount > 0 && `${stagedCount} selected`}
-            </span>
+            <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:'8px' }}>
+              {uploadedCount > 0 && (
+                <span style={{
+                  background:'#f0fdf4', border:'1px solid #bbf7d0',
+                  color:'#15803d', fontSize:'12px', fontWeight:700,
+                  borderRadius:'20px', padding:'4px 12px',
+                }}>
+                  ✓ {uploadedCount} uploaded
+                </span>
+              )}
+              {stagedCount > 0 && (
+                <span style={{
+                  background:'#fffbeb', border:'1px solid #fde68a',
+                  color:'#b45309', fontSize:'12px', fontWeight:700,
+                  borderRadius:'20px', padding:'4px 12px',
+                }}>
+                  ⏸ {stagedCount} ready
+                </span>
+              )}
+            </div>
           </div>
         )}
 
         {/* ── File list ── */}
         <section>
-          <h3 className="mb-3 text-sm font-bold text-gray-700">
-            Uploaded Files
-            {uploadedCount > 0 && (
-              <span className="ml-2 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold text-blue-600">
-                {uploadedCount}
-              </span>
-            )}
-          </h3>
+
+          {/* Section header */}
+          {files.length > 0 && (
+            <div style={{
+              display:'flex', alignItems:'center', gap:'10px',
+              marginBottom:'12px', paddingBottom:'10px',
+              borderBottom:'1px solid #f1f5f9',
+            }}>
+              <h3 style={{ color:'#334155', fontSize:'13px', fontWeight:700, letterSpacing:'0.3px' }}>
+                FILES
+              </h3>
+              {uploadedCount > 0 && (
+                <span style={{
+                  background:'#eff6ff', color:'#2563eb',
+                  fontSize:'11px', fontWeight:700,
+                  borderRadius:'20px', padding:'2px 9px',
+                  border:'1px solid #bfdbfe',
+                }}>
+                  {uploadedCount}
+                </span>
+              )}
+            </div>
+          )}
 
           {loadingInitial ? (
-            <div className="flex items-center justify-center py-16 text-gray-400">
-              <span className="mr-2 inline-block h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500" />
-              Loading…
+            <div style={{
+              display:'flex', alignItems:'center', justifyContent:'center',
+              gap:'10px', padding:'48px 0', color:'#94a3b8',
+            }}>
+              <span style={{
+                display:'inline-block', width:'20px', height:'20px',
+                border:'2.5px solid #e2e8f0', borderTopColor:'#2563eb',
+                borderRadius:'50%', animation:'spin 0.7s linear infinite',
+              }}/>
+              <span style={{ fontSize:'14px' }}>Loading your files…</span>
             </div>
           ) : files.length === 0 ? (
-            /* Empty state */
-            <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-200 py-16 text-center">
-              <span className="text-5xl">📂</span>
-              <p className="font-semibold text-gray-500">No files yet</p>
-              <p className="text-sm text-gray-400">Drop Excel files above or click to browse</p>
+            <div style={{
+              display:'flex', flexDirection:'column', alignItems:'center',
+              justifyContent:'center', gap:'10px',
+              border:'2px dashed #e2e8f0', borderRadius:'14px',
+              padding:'48px 24px', textAlign:'center',
+              background:'#fafafa',
+            }}>
+              <div style={{
+                width:'60px', height:'60px', borderRadius:'16px',
+                background:'linear-gradient(135deg,#eff6ff,#dbeafe)',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                fontSize:'28px', marginBottom:'4px',
+              }}>
+                📂
+              </div>
+              <p style={{ color:'#334155', fontWeight:700, fontSize:'15px' }}>No files yet</p>
+              <p style={{ color:'#94a3b8', fontSize:'13px', lineHeight:1.5 }}>
+                Drop your Excel files above or click to browse
+              </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-2 max-h-80 overflow-y-auto pr-1">
+            <div style={{ display:'flex', flexDirection:'column', gap:'8px', maxHeight:'360px', overflowY:'auto', paddingRight:'2px' }}>
               {files.map(f => (
                 <FileCard
                   key={f.id}
@@ -353,8 +428,8 @@ export default function ExcelUpload() {
         </section>
       </div>
 
-      {/* Toast notifications — rendered in a portal-like fixed position */}
       <ToastContainer toasts={toasts} onDismiss={removeToast} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </>
   );
 }
